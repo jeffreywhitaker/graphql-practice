@@ -1,5 +1,6 @@
-const graphql = require('graphql')
+// imports
 
+const graphql = require('graphql')
 const {
     GraphQLObjectType,
     GraphQLString,
@@ -11,12 +12,10 @@ const {
 //Dummy data for lazy ones :)
 
 const books = [
-    {name: 'Name of the Wind', genre: 'Fantasy', id: '1'},
-    {name: 'The Final Empire', genre: 'Fantasy', id: '2'},
-    {name: 'The Long Earth', genre: 'Sci-Fi', id: '3'}
+    {name: 'Name of the Wind', genre: 'Fantasy', id: '1', authorId: '1'},
+    {name: 'The Final Empire', genre: 'Fantasy', id: '2', authorId: '2'},
+    {name: 'The Long Earth', genre: 'Sci-Fi', id: '3', authorId: '3'},
 ]
-
-//dummy data
 
 const authors =  [
     {name: 'Patrick Rothfuss', age: 44, id:"1"},
@@ -24,12 +23,20 @@ const authors =  [
     {name: 'Terry Pratchett', age: 66, id:"3"},
 ]
 
+// Types
+
 const BookType = new GraphQLObjectType({
     name: 'Book',
     fields: () => ({
         id: { type: GraphQLID },
         name: { type: GraphQLString },
-        genre: { type: GraphQLString }
+        genre: { type: GraphQLString },
+        author: {
+            type: AuthorType,
+            resolve(parent, args) {
+                return authors.find(author => author.id == parent.authorId)
+            }
+        }
     })
 })
 
@@ -42,13 +49,15 @@ const AuthorType = new GraphQLObjectType({
     })
 })
 
+// Queries
+
 const RootQuery = new GraphQLObjectType({
     name: 'RootQueryType',
     fields: {
         book: {
             type: BookType,
             args: { id: { type: GraphQLID } },
-            resolve(parent, args){
+            resolve(parent, args) {
                 // code to get data from db or other source
                 return books.find(book => book.id == args.id)
             }
@@ -62,6 +71,8 @@ const RootQuery = new GraphQLObjectType({
         }
     }
 })
+
+// export
 
 module.exports = new GraphQLSchema({
     query: RootQuery
